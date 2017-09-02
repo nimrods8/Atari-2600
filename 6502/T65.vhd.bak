@@ -136,7 +136,6 @@ architecture rtl of T65 is
 	signal BAAdd			: std_logic_vector(1 downto 0);
 	signal BreakAtNA		: std_logic;
 	signal ADAdd			: std_logic;
-	signal ADAddY			: std_logic;						-- NS 13-02
 	signal PCAdd			: std_logic;
 	signal Inc_S			: std_logic;
 	signal Dec_S			: std_logic;
@@ -179,11 +178,10 @@ begin
 			BAAdd => BAAdd,
 			BreakAtNA => BreakAtNA,
 			ADAdd => ADAdd,
-			ADAddY => ADAddY,
 			PCAdd => PCAdd,
 			Inc_S => Inc_S,
 			Dec_S => Dec_S,
-				LDA => LDA,
+			LDA => LDA,
 			LDP => LDP,
 			LDX => LDX,
 			LDY => LDY,
@@ -290,10 +288,6 @@ begin
 					PC(7 downto 0) <= PCAdder(7 downto 0);
 				when others =>
 				end case;
-			-- TESTING
-			-- remove the constant write signal when RDY is deasserted NS 19-2-17
-			else
-				R_W_n <= '1';		-- back to read
 			end if;
 		end if;
 	end process;
@@ -393,13 +387,7 @@ begin
 					BAL <= std_logic_vector(unsigned(BAL) + 1);
 				when "10" =>
 					-- BA Add
-					-- NS 20-02-2017
-					-- if LDX xxx,Y add the Y value to the low BAL
-					if IR = "10111110" then
-						BAL <= std_logic_vector(resize(unsigned(BAL(7 downto 0)),9) + resize(unsigned(Y(7 downto 0)), 9));
-					else
-						BAL <= std_logic_vector(resize(unsigned(BAL(7 downto 0)),9) + resize(unsigned(BusA),9));
-					end if;
+					BAL <= std_logic_vector(resize(unsigned(BAL(7 downto 0)),9) + resize(unsigned(BusA),9));
 				when "11" =>
 					-- BA Adj
 					if BAL(8) = '1' then
@@ -409,11 +397,7 @@ begin
 				end case;
 
 				if ADAdd = '1' then
-					if ADAddY = '1' then 
-						AD <= std_logic_vector(unsigned(AD) + unsigned(Y(7 downto 0)));
-					else
-						AD <= std_logic_vector(unsigned(AD) + unsigned(X(7 downto 0)));
-					end if;
+					AD <= std_logic_vector(unsigned(AD) + unsigned(X(7 downto 0)));
 				end if;
 
 				if IR = "00000000" then
