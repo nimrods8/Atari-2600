@@ -1,0 +1,58 @@
+/* Atari on an FPGA
+Masters of Engineering Project
+Cornell University, 2007
+Daniel Beer
+MySystemSim.v
+Top level system for simulation purposes. This can be run in the Quartus II
+simulator by supplying it with the necessary clocks and inputs.
+*/
+module MySystemSim(CLOCK_50, // 50 Mhz clock input
+CLOCK_27, // 27 Mhz clock input
+RES_n, // Active low reset input
+ATARI_CLOCKBUS16, // Atari 1.19 Mhz clock input
+ATARI_CLOCKPIXEL16, // Atari 3.58 Mhz clock input
+ATARI_ROM_CS, // ROM chip select output
+ATARI_ROM_Addr, // ROM address output
+ATARI_ROM_Dout); // ROM data input
+input CLOCK_50, CLOCK_27, RES_n;
+input ATARI_CLOCKBUS16, ATARI_CLOCKPIXEL16;
+output ATARI_ROM_CS;
+output [11:0] ATARI_ROM_Addr;
+output [7:0] ATARI_ROM_Dout;
+wire ATARI_CLOCKPIXEL, ATARI_CLOCKBUS;
+wire [7:0] ATARI_COLOROUT;
+wire ATARI_ROM_CS;
+wire [11:0] ATARI_ROM_Addr;
+wire [7:0] ATARI_ROM_Dout;
+wire ATARI_HSYNC, ATARI_HBLANK, ATARI_VSYNC, ATARI_VBLANK;
+wire RES_n;
+// Atari System
+Atari2600(.CLOCKPIXEL(ATARI_CLOCKPIXEL), .CLOCKBUS(ATARI_CLOCKBUS),
+.COLOROUT(ATARI_COLOROUT), .ROM_CS(ATARI_ROM_CS),
+.ROM_Addr(ATARI_ROM_Addr), .ROM_Dout(ATARI_ROM_Dout),
+.RES_n(RES_n));
+// Cartridge
+Catridge2k
+#(.romFile("cartridge.hex"))
+(.address(ATARI_ROM_Addr[10:0]),
+.clken(ATARI_ROM_CS),
+.clock(ATARI_CLOCKBUS),
+.q(ATARI_ROM_Dout));
+// Uncomment this block to use 4k cartridges
+/*
+Catridge4k
+#(.romFile("cartridge.hex"))
+(.address(ATARI_ROM_Addr),
+.clken(ATARI_ROM_CS),
+.clock(ATARI_CLOCKBUS),
+.q(ATARI_ROM_Dout));
+*/
+// Clock Dividers
+wire ATARI_CLOCKPIXEL16, ATARI_CLOCKBUS16;
+ClockDiv16(.inclk(ATARI_CLOCKPIXEL16),
+.outclk(ATARI_CLOCKPIXEL),
+.reset_n(RES_n));
+ClockDiv16(.inclk(ATARI_CLOCKBUS16),
+.outclk(ATARI_CLOCKBUS),
+.reset_n(RES_n));
+endmodule

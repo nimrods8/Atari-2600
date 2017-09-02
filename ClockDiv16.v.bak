@@ -1,0 +1,27 @@
+/* Atari on an FPGA
+Masters of Engineering Project
+Cornell University, 2007
+Daniel Beer
+ClockDiv16.v
+Clock divider used to generate atari clocks. Divides the clock by 16 counts.
+*/
+module ClockDiv16(inclk, // Input clock signal
+outclk, // Output clock signal
+reset_n); // Active low reset signal
+input inclk, reset_n;
+output outclk;
+// Count register
+reg [15:0] cnt;
+reg outclk;
+// Use a 16 bit shift register to divide the clock by 16 counts.
+always @(posedge inclk, negedge reset_n)
+begin
+if (!reset_n)
+cnt <= 16’d0;
+else
+begin
+cnt <= {cnt[14:0], ~cnt[15]};
+outclk <= cnt[15];
+end
+end
+endmodule
